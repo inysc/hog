@@ -44,7 +44,7 @@ func (l *Logger) write(info string, msg string) (n int, err error) {
 	bs.buf = bs.buf[:0]
 
 	// 写入时间戳
-	bs.buf = time.Now().AppendFormat(bs.buf, "2006-01-02 15:04:05.000|") // 写入时间
+	appendFormat(bs)
 
 	// 写入等级及服务名
 	bs.buf = append(bs.buf, info...)
@@ -54,7 +54,7 @@ func (l *Logger) write(info string, msg string) (n int, err error) {
 
 	// 写入 goid
 	bs.buf = append(bs.buf, "goid:"...)
-	appendNum(bs, runtime.Goid())
+	bs.buf = append(bs.buf, transNum(runtime.Goid(), true)...)
 
 	// 写入日志信息
 	bs.buf = append(bs.buf, msg...)
@@ -127,14 +127,17 @@ func appendCaller(bf *buf) {
 		}
 		bf.buf = append(bf.buf, funcName[c:]...)
 		bf.buf = append(bf.buf, ':')
-		appendNum(bf, line)
+		bf.buf = append(bf.buf, transNum(line, true)...)
 	}
 }
 
-func appendNum[T int | int64](b *buf, num T) {
+func transNum[T int | int64](num T, needSep bool) []byte {
 	var to = toPl.Get().(*bufTo) // +1 for sign of 64bit value in base 2
-	to.buf[21] = '|'
-	i := 21
+	i := 22
+	if needSep {
+		i--
+		to.buf[21] = '|'
+	}
 	for num >= 100 {
 		is := num % 100 * 2
 		num /= 100
@@ -150,8 +153,51 @@ func appendNum[T int | int64](b *buf, num T) {
 		i--
 		to.buf[i] = smallsString[is]
 	}
-	b.buf = append(b.buf, to.buf[i:]...)
-	toPl.Put(to)
+	defer toPl.Put(to)
+	return to.buf[i:]
+}
+
+func appendFormat(b *buf) {
+	now := time.Now()
+
+	b.buf = append(b.buf, transNum(now.Year(), false)...)
+	b.buf = append(b.buf, '-')
+	tinyNum(b, now.Month())
+	b.buf = append(b.buf, '-')
+	tinyNum(b, now.Day())
+	b.buf = append(b.buf, ' ')
+	tinyNum(b, now.Hour())
+	b.buf = append(b.buf, ':')
+	tinyNum(b, now.Minute())
+	b.buf = append(b.buf, ':')
+	tinyNum(b, now.Second())
+	b.buf = append(b.buf, '.')
+	nano := now.Nanosecond()
+	if nano < 10 {
+		b.buf = append(b.buf, smallsString[nano*2+1])
+		b.buf = append(b.buf, '0')
+		b.buf = append(b.buf, '0')
+	} else if nano < 100 {
+		nano *= 2
+		b.buf = append(b.buf, smallsString[nano+1])
+		b.buf = append(b.buf, smallsString[nano+1])
+		b.buf = append(b.buf, '0')
+	} else {
+		b.buf = append(b.buf, transNum(nano, false)[:3]...)
+	}
+	b.buf = append(b.buf, '|')
+}
+
+// [0, 99]
+func tinyNum[T ~int](b *buf, num T) {
+	if num < 10 {
+		b.buf = append(b.buf, '0')
+		b.buf = append(b.buf, smallsString[num*2+1])
+	} else {
+		num *= 2
+		b.buf = append(b.buf, smallsString[num+0])
+		b.buf = append(b.buf, smallsString[num+1])
+	}
 }
 
 // ************* TRACE ****************
