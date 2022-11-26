@@ -109,7 +109,7 @@ const smallsString = "00010203040506070809" +
 	"90919293949596979899"
 
 func appendCaller(bf *buf) {
-	pc, file, line, ok := runtime.Caller(3)
+	pc, file, line, ok := runtime.Caller(4)
 	if ok {
 		var a, b, c = 0, 0, 0
 		for i := 0; i < len(file); i++ {
