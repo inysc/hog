@@ -31,7 +31,6 @@ const (
 type Logger struct {
 	writer io.Writer
 	lvl    Level
-	name   string
 	trace  string
 	debug  string
 	info   string
@@ -74,24 +73,25 @@ func (l *Logger) SetLevel(lvl Level) {
 	l.lvl = lvl
 }
 
-func New(name string, lvl Level, ws ...io.Writer) (l *Logger) {
-	name = name + "|"
+func New(lvl Level, ws ...io.Writer) (l *Logger) {
 	var w io.Writer
 	switch len(ws) {
 	case 0:
 		w = os.Stdout
 	default:
-		w = io.MultiWriter(ws...)
+		if os.Getppid() != 1 {
+			ws = append(ws, os.Stdout)
+		}
+    w = io.MultiWriter(ws...)
 	}
 	return &Logger{
 		writer: w,
 		lvl:    lvl,
-		name:   name,
-		trace:  name + "TRACE|",
-		debug:  name + "DEBUG|",
-		info:   name + "INFO |",
-		warn:   name + "WARN |",
-		err:    name + "ERROR|",
+		trace:  "TRACE|",
+		debug:  "DEBUG|",
+		info:   "INFO |",
+		warn:   "WARN |",
+		err:    "ERROR|",
 	}
 }
 
