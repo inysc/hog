@@ -100,6 +100,18 @@ func appendCaller(bf *bytes.Buffer) {
 	}
 }
 
+// [0, 99]
+func tinyNum[T ~int](bf *bytes.Buffer, num T) {
+	if num < 10 {
+		bf.WriteByte('0')
+		bf.WriteByte(smallsString[num*2+1])
+	} else {
+		num *= 2
+		bf.WriteByte(smallsString[num+0])
+		bf.WriteByte(smallsString[num+1])
+	}
+}
+
 func transNum[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64](num T) []byte {
 	var to = numpl.Get().(*bufnum)
 	idx := 22
@@ -129,16 +141,16 @@ func appendTime(b *bytes.Buffer, now time.Time) {
 
 	b.Write(transNum(Y))
 	b.WriteByte('-')
-	b.Write(transNum(M))
+	tinyNum(b, M)
 	b.WriteByte('-')
-	b.Write(transNum(D))
+	tinyNum(b, D)
 	b.WriteByte(' ')
 
-	b.Write(transNum(h))
+	tinyNum(b, h)
 	b.WriteByte(':')
-	b.Write(transNum(m))
+	tinyNum(b, m)
 	b.WriteByte(':')
-	b.Write(transNum(s))
+	tinyNum(b, s)
 	b.WriteByte('.')
 
 	nano := now.Nanosecond()
