@@ -1,24 +1,60 @@
 package qog
 
 import (
+	"bytes"
 	"fmt"
-	"io"
-	"os"
 	"runtime"
 	"sync"
 	"time"
 )
 
 type (
-	Level uint8
-	buf   struct{ buf []byte }
-	bufTo struct{ buf [22]byte }
+	Level  uint8
+	bufnum struct{ buf [22]byte }
 )
 
 var (
-	bpl  = &sync.Pool{New: func() any { return &buf{buf: make([]byte, maxLen)} }}
-	toPl = &sync.Pool{New: func() any { return &bufTo{} }}
+	bpl     = sync.Pool{New: func() any { return bytes.NewBuffer(make([]byte, 0, 1024)) }}
+	numpl   = sync.Pool{New: func() any { return new(bufnum) }}
+	eventpl = sync.Pool{New: func() any { return &event{bytes.NewBuffer(make([]byte, 0, 1024))} }}
 )
+
+type Event interface {
+	Any(string, any) Event
+	Error(string, error) Event
+	String(string, string) Event
+	Stringp(string, *string) Event
+	Duration(string, time.Duration) Event
+	Durationp(string, *time.Duration) Event
+	Bool(string, bool) Event
+	Boolp(string, *bool) Event
+	Int(string, int) Event
+	Intp(string, *int) Event
+	Int8(string, int8) Event
+	Int8p(string, *int8) Event
+	Int16(string, int16) Event
+	Int16p(string, *int16) Event
+	Int32(string, int32) Event
+	Int32p(string, *int32) Event
+	Int64(string, int64) Event
+	Int64p(string, *int64) Event
+	Uint(string, uint) Event
+	Uintp(string, *uint) Event
+	Uint8(string, uint8) Event
+	Uint8p(string, *uint8) Event
+	Uint16(string, uint16) Event
+	Uint16p(string, *uint16) Event
+	Uint32(string, uint32) Event
+	Uint32p(string, *uint32) Event
+	Uint64(string, uint64) Event
+	Uint64p(string, *uint64) Event
+	Float32(string, float32) Event
+	Float32p(string, *float32) Event
+	Float64(string, float64) Event
+	Float64p(string, *float64) Event
+	Msg(string)
+	Msgf(string, ...any)
+}
 
 const (
 	TRACE Level = iota
@@ -27,73 +63,6 @@ const (
 	WARN
 	ERROR
 )
-
-type Logger struct {
-	writer io.Writer
-	lvl    Level
-	trace  string
-	debug  string
-	info   string
-	warn   string
-	err    string
-}
-
-func (l *Logger) write(info string, msg string) (n int, err error) {
-	bs := bpl.Get().(*buf)
-	bs.buf = bs.buf[:0]
-
-	// 写入时间戳
-	appendFormat(bs)
-
-	// 写入等级及服务名
-	bs.buf = append(bs.buf, info...)
-
-	// 写入调用信息
-	appendCaller(bs)
-
-	// 写入 goid
-	bs.buf = append(bs.buf, "goid:"...)
-	bs.buf = append(bs.buf, transNum(runtime.Goid(), true)...)
-
-	// 写入日志信息
-	bs.buf = append(bs.buf, msg...)
-	bs.buf = append(bs.buf, '\n')
-
-	// 写入到文件
-	n, err = l.writer.Write(bs.buf)
-
-	// 太大就抛弃了
-	if len(bs.buf) < maxLen<<2 {
-		bpl.Put(bs)
-	}
-	return
-}
-
-func (l *Logger) SetLevel(lvl Level) {
-	l.lvl = lvl
-}
-
-func New(lvl Level, ws ...io.Writer) (l *Logger) {
-	var w io.Writer
-	switch len(ws) {
-	case 0:
-		w = os.Stdout
-	default:
-		if os.Getppid() != 1 {
-			ws = append(ws, os.Stdout)
-		}
-    w = io.MultiWriter(ws...)
-	}
-	return &Logger{
-		writer: w,
-		lvl:    lvl,
-		trace:  "TRACE|",
-		debug:  "DEBUG|",
-		info:   "INFO |",
-		warn:   "WARN |",
-		err:    "ERROR|",
-	}
-}
 
 const maxLen = 1024
 
@@ -108,7 +77,7 @@ const smallsString = "00010203040506070809" +
 	"80818283848586878889" +
 	"90919293949596979899"
 
-func appendCaller(bf *buf) {
+func appendCaller(bf *bytes.Buffer) {
 	pc, file, line, ok := runtime.Caller(4)
 	if ok {
 		var a, b, c = 0, 0, 0
@@ -118,162 +87,146 @@ func appendCaller(bf *buf) {
 				b = i
 			}
 		}
-		bf.buf = append(bf.buf, file[a+1:]...)
+		bf.WriteString(file[a+1:])
 		funcName := runtime.FuncForPC(pc).Name()
 		for i := 0; i < len(funcName); i++ {
 			if funcName[i] == '.' {
 				c = i
 			}
 		}
-		bf.buf = append(bf.buf, funcName[c:]...)
-		bf.buf = append(bf.buf, ':')
-		bf.buf = append(bf.buf, transNum(line, true)...)
+		bf.WriteString(funcName[c:])
+		bf.WriteByte(':')
+		bf.Write(transNum(line))
 	}
 }
 
-func transNum[T int | int64](num T, needSep bool) []byte {
-	var to = toPl.Get().(*bufTo) // +1 for sign of 64bit value in base 2
-	i := 22
-	if needSep {
-		i--
-		to.buf[21] = '|'
-	}
+func transNum[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64](num T) []byte {
+	var to = numpl.Get().(*bufnum)
+	idx := 22
 	for num >= 100 {
 		is := num % 100 * 2
 		num /= 100
-		i -= 2
-		to.buf[i+1] = smallsString[is+1]
-		to.buf[i+0] = smallsString[is+0]
+		idx -= 2
+		to.buf[idx+1] = smallsString[is+1]
+		to.buf[idx+0] = smallsString[is+0]
 	}
 	// us < 100
 	is := num * 2
-	i--
-	to.buf[i] = smallsString[is+1]
+	idx--
+	to.buf[idx] = smallsString[is+1]
 	if num >= 10 {
-		i--
-		to.buf[i] = smallsString[is]
+		idx--
+		to.buf[idx] = smallsString[is]
 	}
-	defer toPl.Put(to)
-	return to.buf[i:]
+	defer numpl.Put(to)
+	return to.buf[idx:]
 }
 
-func appendFormat(b *buf) {
-	now := time.Now()
+func appendTime(b *bytes.Buffer, now time.Time) {
 
-	b.buf = append(b.buf, transNum(now.Year(), false)...)
-	b.buf = append(b.buf, '-')
-	tinyNum(b, now.Month())
-	b.buf = append(b.buf, '-')
-	tinyNum(b, now.Day())
-	b.buf = append(b.buf, ' ')
-	tinyNum(b, now.Hour())
-	b.buf = append(b.buf, ':')
-	tinyNum(b, now.Minute())
-	b.buf = append(b.buf, ':')
-	tinyNum(b, now.Second())
-	b.buf = append(b.buf, '.')
+	Y, M, D := now.Date()
+	h, m, s := now.Clock()
+
+	b.Write(transNum(Y))
+	b.WriteByte('-')
+	b.Write(transNum(M))
+	b.WriteByte('-')
+	b.Write(transNum(D))
+	b.WriteByte(' ')
+
+	b.Write(transNum(h))
+	b.WriteByte(':')
+	b.Write(transNum(m))
+	b.WriteByte(':')
+	b.Write(transNum(s))
+	b.WriteByte('.')
+
 	nano := now.Nanosecond()
 	if nano < 10 {
-		b.buf = append(b.buf, smallsString[nano*2+1])
-		b.buf = append(b.buf, '0')
-		b.buf = append(b.buf, '0')
+		b.WriteByte(smallsString[nano*2+1])
+		b.WriteByte('0')
+		b.WriteByte('0')
 	} else if nano < 100 {
 		nano *= 2
-		b.buf = append(b.buf, smallsString[nano+1])
-		b.buf = append(b.buf, smallsString[nano+1])
-		b.buf = append(b.buf, '0')
+		b.WriteByte(smallsString[nano+1])
+		b.WriteByte(smallsString[nano+1])
+		b.WriteByte('0')
 	} else {
-		b.buf = append(b.buf, transNum(nano, false)[:3]...)
-	}
-	b.buf = append(b.buf, '|')
-}
-
-// [0, 99]
-func tinyNum[T ~int](b *buf, num T) {
-	if num < 10 {
-		b.buf = append(b.buf, '0')
-		b.buf = append(b.buf, smallsString[num*2+1])
-	} else {
-		num *= 2
-		b.buf = append(b.buf, smallsString[num+0])
-		b.buf = append(b.buf, smallsString[num+1])
+		b.Write(transNum(nano)[:3])
 	}
 }
 
 // ************* TRACE ****************
-func (l *Logger) Trace(msg string) {
+func (l *logger) Trace(msg string) {
 	if l.lvl > TRACE {
 		return
 	}
-	l.write(l.trace, msg)
+	l.write("|TRACE|", msg)
 }
 
-func (l *Logger) Tracef(format string, args ...interface{}) {
+func (l *logger) Tracef(format string, args ...interface{}) {
 	if l.lvl > TRACE {
 		return
 	}
-	msg := fmt.Sprintf(format, args...)
-	l.write(l.trace, msg)
+	l.write("|TRACE|", fmt.Sprintf(format, args...))
 }
 
 // ************* DEBUG ****************
-func (l *Logger) Debug(msg string) {
+func (l *logger) Debug(msg string) {
 	if l.lvl > DEBUG {
 		return
 	}
-	l.write(l.debug, msg)
+	l.write("|DEBUG|", msg)
 }
 
-func (l *Logger) Debugf(format string, args ...interface{}) {
+func (l *logger) Debugf(format string, args ...interface{}) {
 	if l.lvl > DEBUG {
 		return
 	}
-	msg := fmt.Sprintf(format, args...)
-	l.write(l.debug, msg)
+	l.write("|DEBUG|", fmt.Sprintf(format, args...))
 }
 
 // ************* INFO ****************
-func (l *Logger) Info(msg string) {
+func (l *logger) Info(msg string) {
 	if l.lvl > INFO {
 		return
 	}
-	l.write(l.info, msg)
+	l.write("|INFO |", msg)
 }
 
-func (l *Logger) Infof(format string, args ...interface{}) {
+func (l *logger) Infof(format string, args ...interface{}) {
 	if l.lvl > INFO {
 		return
 	}
-	msg := fmt.Sprintf(format, args...)
-	l.write(l.info, msg)
+	l.write("|INFO |", fmt.Sprintf(format, args...))
 }
 
 // ************* Warn ****************
-func (l *Logger) Warn(msg string) {
+func (l *logger) Warn(msg string) {
 	if l.lvl > WARN {
 		return
 	}
-	l.write(l.warn, msg)
+	l.write("|WARN |", msg)
 }
 
-func (l *Logger) Warnf(format string, args ...interface{}) {
+func (l *logger) Warnf(format string, args ...interface{}) {
 	if l.lvl > WARN {
 		return
 	}
-	l.write(l.warn, fmt.Sprintf(format, args...))
+	l.write("|WARN |", fmt.Sprintf(format, args...))
 }
 
 // ************* ERROR ****************
-func (l *Logger) Error(msg string) {
+func (l *logger) Error(msg string) {
 	if l.lvl > ERROR {
 		return
 	}
-	l.write(l.err, msg)
+	l.write("|ERROR|", msg)
 }
 
-func (l *Logger) Errorf(format string, args ...interface{}) {
+func (l *logger) Errorf(format string, args ...interface{}) {
 	if l.lvl > ERROR {
 		return
 	}
-	l.write(l.err, fmt.Sprintf(format, args...))
+	l.write("|ERROR|", fmt.Sprintf(format, args...))
 }
