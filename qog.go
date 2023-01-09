@@ -2,14 +2,15 @@ package qog
 
 import (
 	"bytes"
-	"fmt"
+	"context"
+	"os"
 	"runtime"
 	"sync"
 	"time"
 )
 
 type (
-	Level  uint8
+	Level  = uint8
 	bufnum struct{ buf [22]byte }
 )
 
@@ -62,6 +63,7 @@ const (
 	INFO
 	WARN
 	ERROR
+	FATAL
 )
 
 const maxLen = 1024
@@ -97,6 +99,8 @@ func appendCaller(bf *bytes.Buffer) {
 		bf.WriteString(funcName[c:])
 		bf.WriteByte(':')
 		bf.Write(transNum(line))
+	} else {
+		bf.WriteString("???:??")
 	}
 }
 
@@ -169,76 +173,93 @@ func appendTime(b *bytes.Buffer, now time.Time) {
 }
 
 // ************* TRACE ****************
-func (l *logger) Trace(msg string) {
+func (l *logger) Trace(msg string, args ...interface{}) {
 	if l.lvl > TRACE {
 		return
 	}
-	l.write("|TRACE|", msg)
+	l.write(context.TODO(), "|TRACE|", msg, args)
 }
 
-func (l *logger) Tracef(format string, args ...interface{}) {
+func (l *logger) TraceT(ctx context.Context, format string, args ...any) {
 	if l.lvl > TRACE {
 		return
 	}
-	l.write("|TRACE|", fmt.Sprintf(format, args...))
+	l.write(ctx, "|TRACE|", format, args)
 }
 
 // ************* DEBUG ****************
-func (l *logger) Debug(msg string) {
+func (l *logger) Debug(msg string, args ...interface{}) {
 	if l.lvl > DEBUG {
 		return
 	}
-	l.write("|DEBUG|", msg)
+	l.write(context.TODO(), "|DEBUG|", msg, args)
 }
 
-func (l *logger) Debugf(format string, args ...interface{}) {
+func (l *logger) DebugT(ctx context.Context, format string, args ...any) {
 	if l.lvl > DEBUG {
 		return
 	}
-	l.write("|DEBUG|", fmt.Sprintf(format, args...))
+	l.write(ctx, "|DEBUG|", format, args)
 }
 
 // ************* INFO ****************
-func (l *logger) Info(msg string) {
+func (l *logger) Info(msg string, args ...interface{}) {
 	if l.lvl > INFO {
 		return
 	}
-	l.write("|INFO |", msg)
+	l.write(context.TODO(), "|INFO |", msg, args)
 }
 
-func (l *logger) Infof(format string, args ...interface{}) {
+func (l *logger) InfoT(ctx context.Context, format string, args ...any) {
 	if l.lvl > INFO {
 		return
 	}
-	l.write("|INFO |", fmt.Sprintf(format, args...))
+	l.write(ctx, "|INFO |", format, args)
 }
 
 // ************* Warn ****************
-func (l *logger) Warn(msg string) {
+func (l *logger) Warn(msg string, args ...interface{}) {
 	if l.lvl > WARN {
 		return
 	}
-	l.write("|WARN |", msg)
+	l.write(context.TODO(), "|WARN |", msg, args)
 }
 
-func (l *logger) Warnf(format string, args ...interface{}) {
+func (l *logger) WarnT(ctx context.Context, format string, args ...any) {
 	if l.lvl > WARN {
 		return
 	}
-	l.write("|WARN |", fmt.Sprintf(format, args...))
+	l.write(ctx, "|WARN |", format, args)
 }
 
 // ************* ERROR ****************
-func (l *logger) Error(msg string) {
+func (l *logger) Error(msg string, args ...interface{}) {
 	if l.lvl > ERROR {
 		return
 	}
-	l.write("|ERROR|", msg)
+	l.write(context.TODO(), "|ERROR|", msg, args)
 }
 
-func (l *logger) Errorf(format string, args ...interface{}) {
+func (l *logger) ErrorT(ctx context.Context, format string, args ...any) {
 	if l.lvl > ERROR {
 		return
 	}
-	l.write("|ERROR|", fmt.Sprintf(format, args...))
+	l.write(ctx, "|ERROR|", format, args)
+}
+
+// ************* FATAL ****************
+func (l *logger) Fatal(msg string, args ...interface{}) {
+	if l.lvl > FATAL {
+		return
+	}
+	l.write(context.TODO(), "|ERROR|", msg, args)
+	os.Exit(1)
+}
+
+func (l *logger) FatalT(ctx context.Context, format string, args ...any) {
+	if l.lvl > FATAL {
+		return
+	}
+	l.write(ctx, "|FATAL|", format, args)
+	os.Exit(1)
 }
