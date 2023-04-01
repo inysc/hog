@@ -540,6 +540,13 @@ func (e *event) Msgf(format string, args ...any) {
 	freeEvent(e)
 }
 
+func (e *event) Done() {
+	e.WriteByte('\n')
+	e.Writer.Write(e.Buffer.Bytes())
+
+	freeEvent(e)
+}
+
 type nilevent struct{}
 
 func (ne nilevent) Any(string, any) Event                   { return ne }
@@ -593,5 +600,6 @@ func (ne nilevent) Float32p(string, *float32) Event         { return ne }
 func (ne nilevent) Float64(string, float64) Event           { return ne }
 func (ne nilevent) Float64s(string, []float64) Event        { return ne }
 func (ne nilevent) Float64p(string, *float64) Event         { return ne }
+func (ne nilevent) Done()                                   {}
 func (ne nilevent) Msg(string)                              {}
 func (ne nilevent) Msgf(string, ...any)                     {}

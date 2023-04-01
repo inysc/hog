@@ -70,6 +70,7 @@ type Event interface {
 	Float64(string, float64) Event
 	Float64s(string, []float64) Event
 	Float64p(string, *float64) Event
+	Done()
 	Msg(string)
 	Msgf(string, ...any)
 }
