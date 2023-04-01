@@ -24,9 +24,9 @@ func (l *logger) newEvent(lvl Level) Event {
 		case DEBUG:
 			e.Buffer.WriteString("|DEBUG|")
 		case INFO:
-			e.Buffer.WriteString("|INFO|")
+			e.Buffer.WriteString("|INFO |")
 		case WARN:
-			e.Buffer.WriteString("|WARN|")
+			e.Buffer.WriteString("|WARN |")
 		case ERROR:
 			e.Buffer.WriteString("|ERROR|")
 		case FATAL:

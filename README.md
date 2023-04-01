@@ -12,7 +12,7 @@
 > 运行前需要在 `GOROOT/src/runtime` 文件夹下写入一个新函数
 
 ```Go
-func Goid() int64 {
+func Goid() uint64 {
 	return getg().goid
 }
 ```
