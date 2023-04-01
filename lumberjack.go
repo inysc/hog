@@ -63,7 +63,7 @@ type LoggerFile struct {
 
 	// MaxSize is the maximum size in megabytes of the log file before it gets
 	// rotated. It defaults to 100 megabytes.
-	MaxSize int `json:"maxsize" yaml:"maxsize"`
+	MaxSize int64 `json:"maxsize" yaml:"maxsize"`
 
 	// MaxAge is the maximum number of days to retain old log files based on the
 	// timestamp encoded in their filename.  Note that a day is defined as 24
@@ -104,7 +104,7 @@ var (
 	// megabyte is the conversion factor between MaxSize and bytes.  It is a
 	// variable so tests can mock it out and not need to write megabytes of data
 	// to disk.
-	megabyte = 1024 * 1024
+	megabyte int64 = 1024 * 1024
 )
 
 // Write implements io.Writer.  If a write would cause the log file to be larger
@@ -421,9 +421,9 @@ func (l *LoggerFile) timeFromName(filename, prefix, ext string) (time.Time, erro
 // max returns the maximum size in bytes of log files before rolling.
 func (l *LoggerFile) max() int64 {
 	if l.MaxSize == 0 {
-		return int64(defaultMaxSize * megabyte)
+		return defaultMaxSize * megabyte
 	}
-	return int64(l.MaxSize) * int64(megabyte)
+	return l.MaxSize * megabyte
 }
 
 // dir returns the directory for the current filename.

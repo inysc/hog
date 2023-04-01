@@ -1,9 +1,6 @@
 package qog
 
 import (
-	"bytes"
-	"context"
-	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -11,64 +8,56 @@ import (
 )
 
 type logger struct {
-	writer io.Writer
-	trace  string
-	lvl    Level
+	io.Writer
+	lvl Level
 }
 
-func (l *logger) write(ctx context.Context, info string, msg string, args []any) (n int, err error) {
-	bs := bpl.Get().(*bytes.Buffer)
-	bs.Reset()
+func (l *logger) newEvent(lvl Level) Event {
+	if lvl >= l.lvl {
+		e := getevent()
+		e.Writer = l.Writer
+		appendTime(e.Buffer, time.Now())
 
-	// 写入时间戳
-	// time.Now().AppendFormat(bs, "2006-01-02 15:04:05.000")
-	// bs.Write(time.Now().AppendFormat([]byte{}, "2006-01-02 15:04:05.000"))
-	appendTime(bs, time.Now())
-
-	// 写入等级及服务名
-	bs.WriteString(info)
-	// bs.buf = append(bs.buf, info...)
-
-	// 写入调用信息
-	appendCaller(bs)
-
-	// 写入 goid
-	bs.WriteString("|goid:")
-	bs.Write(transNum(runtime.Goid()))
-	bs.WriteByte('|')
-
-	if ctx != nil {
-		if trace, _ := ctx.Value(l.trace).(string); trace != "" {
-			bs.WriteString("trace:")
-			bs.WriteString(trace)
+		switch lvl {
+		case TRACE:
+			e.Buffer.WriteString("|TRACE|")
+		case DEBUG:
+			e.Buffer.WriteString("|DEBUG|")
+		case INFO:
+			e.Buffer.WriteString("|INFO|")
+		case WARN:
+			e.Buffer.WriteString("|WARN|")
+		case ERROR:
+			e.Buffer.WriteString("|ERROR|")
+		case FATAL:
+			e.Buffer.WriteString("|FATAL|")
 		}
+
+		// 写入调用信息
+		appendCaller(e.Buffer)
+
+		// 写入 goid
+		e.WriteString("|goid:")
+		e.Buffer.Write(transNum(runtime.Goid()))
+		e.WriteByte('|')
+		e.WriteByte(',')
+
+		return e
 	}
-
-	bs.WriteByte(',')
-
-	// 写入日志信息
-	if len(args) == 0 {
-		bs.WriteString(msg)
-	} else {
-		bs.WriteString(fmt.Sprintf(msg, args...))
-	}
-	bs.WriteByte('\n')
-
-	// 写入到文件
-	n, err = l.writer.Write(bs.Bytes())
-
-	// 太大就抛弃了
-	if bs.Len() < maxLen<<3 {
-		bpl.Put(bs)
-	}
-	return
+	return nilevent{}
 }
 
-func (l *logger) SetLevel(lvl Level)    { l.lvl = lvl }
-func (l *logger) SetTrace(trace string) { l.trace = trace }
+func (l *logger) Trace() Event { return l.newEvent(TRACE) }
+func (l *logger) Debug() Event { return l.newEvent(DEBUG) }
+func (l *logger) Info() Event  { return l.newEvent(INFO) }
+func (l *logger) Warn() Event  { return l.newEvent(WARN) }
+func (l *logger) Error() Event { return l.newEvent(ERROR) }
+func (l *logger) Fatal() Event { return l.newEvent(FATAL) }
+
+func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
 
 // needStd 是否需要同时输出到标准输出（仅在 ppid != 1 时生效 ）
-func New(needStd bool, lvl Level, trace_field string, ws ...io.Writer) *logger {
+func New(needStd bool, lvl Level, ws ...io.Writer) *logger {
 	var w io.Writer
 	switch len(ws) {
 	case 0:
@@ -83,11 +72,11 @@ func New(needStd bool, lvl Level, trace_field string, ws ...io.Writer) *logger {
 			w = io.MultiWriter(ws...)
 		}
 	}
-	return &logger{w, trace_field, lvl}
+	return &logger{w, lvl}
 }
 
 func Simple(filename string) *logger {
-	return New(true, DEBUG, "trace", &LoggerFile{
+	return New(true, DEBUG, &LoggerFile{
 		Filename:   filename,
 		MaxSize:    100,
 		MaxAge:     30,

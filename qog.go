@@ -2,8 +2,6 @@ package qog
 
 import (
 	"bytes"
-	"context"
-	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -17,41 +15,60 @@ type (
 var (
 	bpl     = sync.Pool{New: func() any { return bytes.NewBuffer(make([]byte, 0, 1024)) }}
 	numpl   = sync.Pool{New: func() any { return new(bufnum) }}
-	eventpl = sync.Pool{New: func() any { return &event{bytes.NewBuffer(make([]byte, 0, 1024))} }}
+	eventpl = sync.Pool{New: func() any { return &event{bytes.NewBuffer(make([]byte, 0, 1024)), nil, nil} }}
 )
 
 type Event interface {
 	Any(string, any) Event
 	Error(string, error) Event
+	IgError(string, error) Event
 	String(string, string) Event
+	Strings(string, []string) Event
 	Stringp(string, *string) Event
 	Duration(string, time.Duration) Event
+	Durations(string, []time.Duration) Event
 	Durationp(string, *time.Duration) Event
+	Byte(string, byte) Event
+	Bytes(string, []byte) Event
+	Bytep(string, *byte) Event
 	Bool(string, bool) Event
+	Bools(string, []bool) Event
 	Boolp(string, *bool) Event
 	Int(string, int) Event
+	Ints(string, []int) Event
 	Intp(string, *int) Event
 	Int8(string, int8) Event
+	Int8s(string, []int8) Event
 	Int8p(string, *int8) Event
 	Int16(string, int16) Event
+	Int16s(string, []int16) Event
 	Int16p(string, *int16) Event
 	Int32(string, int32) Event
+	Int32s(string, []int32) Event
 	Int32p(string, *int32) Event
 	Int64(string, int64) Event
+	Int64s(string, []int64) Event
 	Int64p(string, *int64) Event
 	Uint(string, uint) Event
+	Uints(string, []uint) Event
 	Uintp(string, *uint) Event
 	Uint8(string, uint8) Event
+	Uint8s(string, []uint8) Event
 	Uint8p(string, *uint8) Event
 	Uint16(string, uint16) Event
+	Uint16s(string, []uint16) Event
 	Uint16p(string, *uint16) Event
 	Uint32(string, uint32) Event
+	Uint32s(string, []uint32) Event
 	Uint32p(string, *uint32) Event
 	Uint64(string, uint64) Event
+	Uint64s(string, []uint64) Event
 	Uint64p(string, *uint64) Event
 	Float32(string, float32) Event
+	Float32s(string, []float32) Event
 	Float32p(string, *float32) Event
 	Float64(string, float64) Event
+	Float64s(string, []float64) Event
 	Float64p(string, *float64) Event
 	Msg(string)
 	Msgf(string, ...any)
@@ -66,7 +83,7 @@ const (
 	FATAL
 )
 
-const maxLen = 1024
+const maxLen = 1 << 13
 
 const smallsString = "00010203040506070809" +
 	"10111213141516171819" +
@@ -116,7 +133,11 @@ func tinyNum[T ~int](bf *bytes.Buffer, num T) {
 	}
 }
 
-func transNum[T ~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64](num T) []byte {
+type number interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
+func transNum[T number](num T) []byte {
 	var to = numpl.Get().(*bufnum)
 	idx := 22
 	for num >= 100 {
@@ -170,96 +191,4 @@ func appendTime(b *bytes.Buffer, now time.Time) {
 	} else {
 		b.Write(transNum(nano)[:3])
 	}
-}
-
-// ************* TRACE ****************
-func (l *logger) Trace(msg string, args ...interface{}) {
-	if l.lvl > TRACE {
-		return
-	}
-	l.write(context.TODO(), "|TRACE|", msg, args)
-}
-
-func (l *logger) TraceT(ctx context.Context, format string, args ...any) {
-	if l.lvl > TRACE {
-		return
-	}
-	l.write(ctx, "|TRACE|", format, args)
-}
-
-// ************* DEBUG ****************
-func (l *logger) Debug(msg string, args ...interface{}) {
-	if l.lvl > DEBUG {
-		return
-	}
-	l.write(context.TODO(), "|DEBUG|", msg, args)
-}
-
-func (l *logger) DebugT(ctx context.Context, format string, args ...any) {
-	if l.lvl > DEBUG {
-		return
-	}
-	l.write(ctx, "|DEBUG|", format, args)
-}
-
-// ************* INFO ****************
-func (l *logger) Info(msg string, args ...interface{}) {
-	if l.lvl > INFO {
-		return
-	}
-	l.write(context.TODO(), "|INFO |", msg, args)
-}
-
-func (l *logger) InfoT(ctx context.Context, format string, args ...any) {
-	if l.lvl > INFO {
-		return
-	}
-	l.write(ctx, "|INFO |", format, args)
-}
-
-// ************* Warn ****************
-func (l *logger) Warn(msg string, args ...interface{}) {
-	if l.lvl > WARN {
-		return
-	}
-	l.write(context.TODO(), "|WARN |", msg, args)
-}
-
-func (l *logger) WarnT(ctx context.Context, format string, args ...any) {
-	if l.lvl > WARN {
-		return
-	}
-	l.write(ctx, "|WARN |", format, args)
-}
-
-// ************* ERROR ****************
-func (l *logger) Error(msg string, args ...interface{}) {
-	if l.lvl > ERROR {
-		return
-	}
-	l.write(context.TODO(), "|ERROR|", msg, args)
-}
-
-func (l *logger) ErrorT(ctx context.Context, format string, args ...any) {
-	if l.lvl > ERROR {
-		return
-	}
-	l.write(ctx, "|ERROR|", format, args)
-}
-
-// ************* FATAL ****************
-func (l *logger) Fatal(msg string, args ...interface{}) {
-	if l.lvl > FATAL {
-		return
-	}
-	l.write(context.TODO(), "|ERROR|", msg, args)
-	os.Exit(1)
-}
-
-func (l *logger) FatalT(ctx context.Context, format string, args ...any) {
-	if l.lvl > FATAL {
-		return
-	}
-	l.write(ctx, "|FATAL|", format, args)
-	os.Exit(1)
 }
