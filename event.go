@@ -136,17 +136,17 @@ func (e *event) Boolp(key string, val *bool) Event {
 
 func (e *event) Int(key string, val int) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 	return e
 }
 
 func (e *event) Ints(key string, val []int) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -155,7 +155,7 @@ func (e *event) Ints(key string, val []int) Event {
 func (e *event) Intp(key string, val *int) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -165,7 +165,7 @@ func (e *event) Intp(key string, val *int) Event {
 
 func (e *event) Int8(key string, val int8) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -173,10 +173,10 @@ func (e *event) Int8(key string, val int8) Event {
 func (e *event) Int8s(key string, val []int8) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -185,7 +185,7 @@ func (e *event) Int8s(key string, val []int8) Event {
 func (e *event) Int8p(key string, val *int8) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -195,7 +195,7 @@ func (e *event) Int8p(key string, val *int8) Event {
 
 func (e *event) Int16(key string, val int16) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -203,10 +203,10 @@ func (e *event) Int16(key string, val int16) Event {
 func (e *event) Int16s(key string, val []int16) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -215,7 +215,7 @@ func (e *event) Int16s(key string, val []int16) Event {
 func (e *event) Int16p(key string, val *int16) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -225,7 +225,7 @@ func (e *event) Int16p(key string, val *int16) Event {
 
 func (e *event) Int32(key string, val int32) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -233,10 +233,10 @@ func (e *event) Int32(key string, val int32) Event {
 func (e *event) Int32s(key string, val []int32) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -245,7 +245,7 @@ func (e *event) Int32s(key string, val []int32) Event {
 func (e *event) Int32p(key string, val *int32) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -255,7 +255,7 @@ func (e *event) Int32p(key string, val *int32) Event {
 
 func (e *event) Int64(key string, val int64) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -263,10 +263,10 @@ func (e *event) Int64(key string, val int64) Event {
 func (e *event) Int64s(key string, val []int64) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -275,7 +275,7 @@ func (e *event) Int64s(key string, val []int64) Event {
 func (e *event) Int64p(key string, val *int64) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -285,7 +285,7 @@ func (e *event) Int64p(key string, val *int64) Event {
 
 func (e *event) Uint(key string, val uint) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -293,10 +293,10 @@ func (e *event) Uint(key string, val uint) Event {
 func (e *event) Uints(key string, val []uint) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -305,7 +305,7 @@ func (e *event) Uints(key string, val []uint) Event {
 func (e *event) Uintp(key string, val *uint) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -315,7 +315,7 @@ func (e *event) Uintp(key string, val *uint) Event {
 
 func (e *event) Uint8(key string, val uint8) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -323,10 +323,10 @@ func (e *event) Uint8(key string, val uint8) Event {
 func (e *event) Uint8s(key string, val []uint8) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -335,7 +335,7 @@ func (e *event) Uint8s(key string, val []uint8) Event {
 func (e *event) Uint8p(key string, val *uint8) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -345,7 +345,7 @@ func (e *event) Uint8p(key string, val *uint8) Event {
 
 func (e *event) Uint16(key string, val uint16) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -353,10 +353,10 @@ func (e *event) Uint16(key string, val uint16) Event {
 func (e *event) Uint16s(key string, val []uint16) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -365,7 +365,7 @@ func (e *event) Uint16s(key string, val []uint16) Event {
 func (e *event) Uint16p(key string, val *uint16) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -375,7 +375,7 @@ func (e *event) Uint16p(key string, val *uint16) Event {
 
 func (e *event) Uint32(key string, val uint32) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -383,10 +383,10 @@ func (e *event) Uint32(key string, val uint32) Event {
 func (e *event) Uint32s(key string, val []uint32) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -395,7 +395,7 @@ func (e *event) Uint32s(key string, val []uint32) Event {
 func (e *event) Uint32p(key string, val *uint32) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -405,7 +405,7 @@ func (e *event) Uint32p(key string, val *uint32) Event {
 
 func (e *event) Uint64(key string, val uint64) Event {
 	e.WriteString(key)
-	e.Writer.Write(transNum(val))
+	e.Buffer.Write(transNum(val))
 
 	return e
 }
@@ -413,10 +413,10 @@ func (e *event) Uint64(key string, val uint64) Event {
 func (e *event) Uint64s(key string, val []uint64) Event {
 	e.WriteString(key)
 	if len(val) == 0 {
-		e.Writer.Write(transNum(val[0]))
+		e.Buffer.Write(transNum(val[0]))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(transNum(val[i]))
+			e.Buffer.Write(transNum(val[i]))
 		}
 	}
 	return e
@@ -425,7 +425,7 @@ func (e *event) Uint64s(key string, val []uint64) Event {
 func (e *event) Uint64p(key string, val *uint64) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(transNum(*val))
+		e.Buffer.Write(transNum(*val))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -445,7 +445,7 @@ func (e *event) Any(key string, val any) Event {
 
 func (e *event) Float32(key string, val float32) Event {
 	e.WriteString(key)
-	e.Writer.Write(strconv.AppendFloat([]byte{}, float64(val), 'f', -1, 32))
+	e.Buffer.Write(strconv.AppendFloat([]byte{}, float64(val), 'f', -1, 32))
 
 	return e
 }
@@ -453,10 +453,10 @@ func (e *event) Float32(key string, val float32) Event {
 func (e *event) Float32s(key string, val []float32) Event {
 	e.WriteString(key)
 	if len(val) != 0 {
-		e.Writer.Write(strconv.AppendFloat([]byte{}, float64(val[0]), 'f', -1, 32))
+		e.Buffer.Write(strconv.AppendFloat([]byte{}, float64(val[0]), 'f', -1, 32))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(strconv.AppendFloat([]byte{}, float64(val[i]), 'f', -1, 32))
+			e.Buffer.Write(strconv.AppendFloat([]byte{}, float64(val[i]), 'f', -1, 32))
 		}
 	}
 
@@ -466,7 +466,7 @@ func (e *event) Float32s(key string, val []float32) Event {
 func (e *event) Float32p(key string, val *float32) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(strconv.AppendFloat([]byte{}, float64(*val), 'f', -1, 32))
+		e.Buffer.Write(strconv.AppendFloat([]byte{}, float64(*val), 'f', -1, 32))
 	} else {
 		e.WriteString("<nil>")
 	}
@@ -476,17 +476,17 @@ func (e *event) Float32p(key string, val *float32) Event {
 
 func (e *event) Float64(key string, val float64) Event {
 	e.WriteString(key)
-	e.Writer.Write(strconv.AppendFloat([]byte{}, val, 'f', -1, 64))
+	e.Buffer.Write(strconv.AppendFloat([]byte{}, val, 'f', -1, 64))
 	return e
 }
 
 func (e *event) Float64s(key string, val []float64) Event {
 	e.WriteString(key)
 	if len(val) != 0 {
-		e.Writer.Write(strconv.AppendFloat([]byte{}, val[0], 'f', -1, 32))
+		e.Buffer.Write(strconv.AppendFloat([]byte{}, val[0], 'f', -1, 32))
 		for i := 1; i < len(val); i++ {
 			e.WriteByte(',')
-			e.Writer.Write(strconv.AppendFloat([]byte{}, val[i], 'f', -1, 32))
+			e.Buffer.Write(strconv.AppendFloat([]byte{}, val[i], 'f', -1, 32))
 		}
 	}
 
@@ -496,7 +496,7 @@ func (e *event) Float64s(key string, val []float64) Event {
 func (e *event) Float64p(key string, val *float64) Event {
 	e.WriteString(key)
 	if val != nil {
-		e.Writer.Write(strconv.AppendFloat([]byte{}, *val, 'f', -1, 64))
+		e.Buffer.Write(strconv.AppendFloat([]byte{}, *val, 'f', -1, 64))
 	} else {
 		e.WriteString("<nil>")
 	}
