@@ -7,6 +7,17 @@ import (
 	"time"
 )
 
+type Logger interface {
+	Trace(...bool) Event
+	Debug(...bool) Event
+	Info(...bool) Event
+	Warn(...bool) Event
+	Error(...bool) Event
+	Fatal(...bool) Event
+
+	SetLevel(Level)
+}
+
 type logger struct {
 	io.Writer
 	lvl Level
@@ -58,7 +69,7 @@ func (l *logger) Fatal(trimperfix ...bool) Event { return l.newEvent(FATAL, trim
 func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
 
 // needStd 是否需要同时输出到标准输出（仅在 ppid != 1 时生效 ）
-func New(needStd bool, lvl Level, ws ...io.Writer) *logger {
+func New(needStd bool, lvl Level, ws ...io.Writer) Logger {
 	var w io.Writer
 	switch len(ws) {
 	case 0:
@@ -76,7 +87,7 @@ func New(needStd bool, lvl Level, ws ...io.Writer) *logger {
 	return &logger{w, lvl}
 }
 
-func Simple(filename string) *logger {
+func Simple(filename string) Logger {
 	return New(true, DEBUG, &LoggerFile{
 		Filename:   filename,
 		MaxSize:    100,
@@ -86,4 +97,3 @@ func Simple(filename string) *logger {
 		Compress:   false,
 	})
 }
-

@@ -113,7 +113,7 @@ func TestTransNum(t *testing.T) {
 
 func TestDebug(t *testing.T) {
 	lg := Simple("")
-	lg.lvl = TRACE
+	lg.SetLevel(TRACE)
 	lg.Trace().Any("any=", nil).Bool("a=", true).Bools("||c=", []bool{true, false, true}).Msg("")
 	lg.Debug().Bool("b=", true).Bools("||c=", []bool{true, false, true}).Msg("")
 	lg.Info().Bool("c=", true).Bools("||c=", []bool{true, false, true}).Msg("")
