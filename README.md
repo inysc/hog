@@ -13,6 +13,6 @@
 
 ```Go
 func Goid() uint64 {
-	return getg().goid
+ return getg().goid
 }
 ```
