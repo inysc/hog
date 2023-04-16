@@ -97,8 +97,8 @@ const smallsString = "00010203040506070809" +
 	"80818283848586878889" +
 	"90919293949596979899"
 
-func appendCaller(bf *bytes.Buffer) {
-	pc, file, line, ok := runtime.Caller(4)
+func appendCaller(bf *bytes.Buffer, skip int) {
+	pc, file, line, ok := runtime.Caller(skip)
 	if ok {
 		var a, b, c = 0, 0, 0
 		for i := 0; i < len(file); i++ {

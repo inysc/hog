@@ -16,11 +16,17 @@ type Logger interface {
 	Fatal(...bool) Event
 
 	SetLevel(Level)
+	AddSkip(int)
 }
+
+type nillogger struct{}
+
+var DefaultLogger Logger = nillogger{}
 
 type logger struct {
 	io.Writer
-	lvl Level
+	lvl  Level
+	skip int
 }
 
 func (l *logger) newEvent(lvl Level, flag []bool) Event {
@@ -46,7 +52,7 @@ func (l *logger) newEvent(lvl Level, flag []bool) Event {
 			}
 
 			// 写入调用信息
-			appendCaller(e.Buffer)
+			appendCaller(e.Buffer, l.skip)
 
 			// 写入 goid
 			e.WriteString("|goid:")
@@ -67,6 +73,7 @@ func (l *logger) Error(trimperfix ...bool) Event { return l.newEvent(ERROR, trim
 func (l *logger) Fatal(trimperfix ...bool) Event { return l.newEvent(FATAL, trimperfix) }
 
 func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
+func (l *logger) AddSkip(skip int)   { l.skip += skip }
 
 // needStd 是否需要同时输出到标准输出（仅在 ppid != 1 时生效 ）
 func New(needStd bool, lvl Level, ws ...io.Writer) Logger {
@@ -84,7 +91,7 @@ func New(needStd bool, lvl Level, ws ...io.Writer) Logger {
 			w = io.MultiWriter(ws...)
 		}
 	}
-	return &logger{w, lvl}
+	return &logger{w, lvl, 3}
 }
 
 func Simple(filename string) Logger {
@@ -97,3 +104,12 @@ func Simple(filename string) Logger {
 		Compress:   false,
 	})
 }
+
+func (nillogger) Trace(...bool) Event { return nilevent{} }
+func (nillogger) Debug(...bool) Event { return nilevent{} }
+func (nillogger) Info(...bool) Event  { return nilevent{} }
+func (nillogger) Warn(...bool) Event  { return nilevent{} }
+func (nillogger) Error(...bool) Event { return nilevent{} }
+func (nillogger) Fatal(...bool) Event { return nilevent{} }
+func (nillogger) SetLevel(Level)      {}
+func (nillogger) AddSkip(int)         {}
