@@ -516,4 +516,3 @@ func (b byFormatTime) Swap(i, j int) {
 func (b byFormatTime) Len() int {
 	return len(b)
 }
-

@@ -1,3 +1,4 @@
+//go:build !linux
 // +build !linux
 
 package qog
@@ -9,4 +10,3 @@ import (
 func chown(_ string, _ os.FileInfo) error {
 	return nil
 }
-
