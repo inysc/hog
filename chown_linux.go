@@ -1,4 +1,4 @@
-package lumberjack
+package qog
 
 import (
 	"os"
