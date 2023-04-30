@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"time"
 )
@@ -11,6 +12,7 @@ import (
 type event struct {
 	*bytes.Buffer
 	io.Writer
+	lvl  Level
 	done func([]byte)
 }
 
@@ -524,25 +526,28 @@ func (e *event) IgError(key string, val error) Event {
 	return e
 }
 
-func (e *event) Msg(msg string) {
-	e.WriteString(msg)
+func (e *event) Done()                           { e.write("") }
+func (e *event) Msg(msg string)                  { e.write(msg) }
+func (e *event) Msgf(format string, args ...any) { e.write(fmt.Sprintf(format, args...)) }
+
+func (e *event) write(msg string) {
+	if msg != "" {
+		e.WriteString(msg)
+	}
 	e.WriteByte('\n')
 	e.Writer.Write(e.Buffer.Bytes())
 
-	freeEvent(e)
-}
+	if e.done != nil {
+		e.done(e.Buffer.Bytes())
+	}
 
-func (e *event) Msgf(format string, args ...any) {
-	e.WriteString(fmt.Sprintf(format, args...))
-	e.WriteByte('\n')
-	e.Writer.Write(e.Buffer.Bytes())
-
-	freeEvent(e)
-}
-
-func (e *event) Done() {
-	e.WriteByte('\n')
-	e.Writer.Write(e.Buffer.Bytes())
+	switch e.lvl {
+	case FATAL:
+		os.Stderr.Write(e.Buffer.Bytes())
+		os.Exit(1)
+	case PANIC:
+		panic(e.Buffer.String())
+	}
 
 	freeEvent(e)
 }

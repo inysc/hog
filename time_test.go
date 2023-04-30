@@ -120,3 +120,7 @@ func TestDebug(t *testing.T) {
 
 	t.Log(1 << 13)
 }
+
+func TestAA(t *testing.T) {
+	panic([]byte("1234"))
+}

@@ -8,12 +8,15 @@ import (
 )
 
 type Logger interface {
-	Trace(...bool) Event
-	Debug(...bool) Event
-	Info(...bool) Event
-	Warn(...bool) Event
-	Error(...bool) Event
-	Fatal(...bool) Event
+	Trace() Event
+	Debug() Event
+	Info() Event
+	Warn() Event
+	Error() Event
+	Fatal() Event
+	Panic() Event
+
+	Op() Event
 
 	SetLevel(Level)
 	AddSkip(int)
@@ -29,11 +32,12 @@ type logger struct {
 	skip int
 }
 
-func (l *logger) newEvent(lvl Level, flag []bool) Event {
+func (l *logger) newEvent(lvl Level, flag bool) Event {
 	if lvl >= l.lvl {
 		e := getevent()
+		e.lvl = lvl
 		e.Writer = l.Writer
-		if len(flag) == 0 || !flag[0] {
+		if !flag {
 			appendTime(e.Buffer, time.Now())
 
 			switch lvl {
@@ -65,12 +69,14 @@ func (l *logger) newEvent(lvl Level, flag []bool) Event {
 	return nilevent{}
 }
 
-func (l *logger) Trace(trimperfix ...bool) Event { return l.newEvent(TRACE, trimperfix) }
-func (l *logger) Debug(trimperfix ...bool) Event { return l.newEvent(DEBUG, trimperfix) }
-func (l *logger) Info(trimperfix ...bool) Event  { return l.newEvent(INFO, trimperfix) }
-func (l *logger) Warn(trimperfix ...bool) Event  { return l.newEvent(WARN, trimperfix) }
-func (l *logger) Error(trimperfix ...bool) Event { return l.newEvent(ERROR, trimperfix) }
-func (l *logger) Fatal(trimperfix ...bool) Event { return l.newEvent(FATAL, trimperfix) }
+func (l *logger) Trace() Event { return l.newEvent(TRACE, false) }
+func (l *logger) Debug() Event { return l.newEvent(DEBUG, false) }
+func (l *logger) Info() Event  { return l.newEvent(INFO, false) }
+func (l *logger) Warn() Event  { return l.newEvent(WARN, false) }
+func (l *logger) Error() Event { return l.newEvent(ERROR, false) }
+func (l *logger) Fatal() Event { return l.newEvent(FATAL, false) }
+func (l *logger) Panic() Event { return l.newEvent(PANIC, false) }
+func (l *logger) Op() Event    { return l.newEvent(OP, true) }
 
 func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
 func (l *logger) AddSkip(skip int)   { l.skip += skip }
@@ -105,11 +111,13 @@ func Simple(filename string) Logger {
 	})
 }
 
-func (nillogger) Trace(...bool) Event { return nilevent{} }
-func (nillogger) Debug(...bool) Event { return nilevent{} }
-func (nillogger) Info(...bool) Event  { return nilevent{} }
-func (nillogger) Warn(...bool) Event  { return nilevent{} }
-func (nillogger) Error(...bool) Event { return nilevent{} }
-func (nillogger) Fatal(...bool) Event { return nilevent{} }
-func (nillogger) SetLevel(Level)      {}
-func (nillogger) AddSkip(int)         {}
+func (nillogger) Trace() Event   { return nilevent{} }
+func (nillogger) Debug() Event   { return nilevent{} }
+func (nillogger) Info() Event    { return nilevent{} }
+func (nillogger) Warn() Event    { return nilevent{} }
+func (nillogger) Error() Event   { return nilevent{} }
+func (nillogger) Fatal() Event   { return nilevent{} }
+func (nillogger) Panic() Event   { return nilevent{} }
+func (nillogger) Op() Event      { return nilevent{} }
+func (nillogger) SetLevel(Level) {}
+func (nillogger) AddSkip(int)    {}

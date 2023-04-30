@@ -15,7 +15,7 @@ type (
 var (
 	bpl     = sync.Pool{New: func() any { return bytes.NewBuffer(make([]byte, 0, 1024)) }}
 	numpl   = sync.Pool{New: func() any { return new(bufnum) }}
-	eventpl = sync.Pool{New: func() any { return &event{bytes.NewBuffer(make([]byte, 0, 1024)), nil, nil} }}
+	eventpl = sync.Pool{New: func() any { return &event{bytes.NewBuffer(make([]byte, 0, 1024)), nil, 0, nil} }}
 )
 
 type Event interface {
@@ -82,6 +82,9 @@ const (
 	WARN
 	ERROR
 	FATAL
+	PANIC
+
+	OP
 )
 
 const maxLen = 1 << 13
@@ -138,6 +141,7 @@ type number interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
+// BUG: 无法处理负数
 func transNum[T number](num T) []byte {
 	var to = numpl.Get().(*bufnum)
 	idx := 22
