@@ -144,6 +144,13 @@ type number interface {
 // BUG: 无法处理负数
 func transNum[T number](num T) []byte {
 	var to = numpl.Get().(*bufnum)
+	defer numpl.Put(to)
+
+	neg := num < 0
+	if neg {
+		num = -num
+	}
+
 	idx := 22
 	for num >= 100 {
 		is := num % 100 * 2
@@ -160,7 +167,10 @@ func transNum[T number](num T) []byte {
 		idx--
 		to.buf[idx] = smallsString[is]
 	}
-	defer numpl.Put(to)
+	if neg {
+		idx--
+		to.buf[idx] = '-'
+	}
 	return to.buf[idx:]
 }
 

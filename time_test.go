@@ -3,6 +3,9 @@ package qog
 import (
 	"bytes"
 	"fmt"
+	"math"
+	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -106,8 +109,8 @@ func BenchmarkTimeAppendFormat2(b *testing.B) {
 }
 
 func TestTransNum(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		t.Logf("%s", transNum(i))
+	for i := math.MinInt + 1; i < math.MaxInt; i++ {
+		assert(strconv.Itoa(i) == string(transNum(i)), fmt.Sprintf("i=%d", i))
 	}
 }
 
@@ -123,4 +126,15 @@ func TestDebug(t *testing.T) {
 
 func TestAA(t *testing.T) {
 	panic([]byte("1234"))
+}
+
+func TestItoa(t *testing.T) {
+	var a = -1
+
+	t.Logf("|%s|", strconv.Itoa(a))
+	t.Logf("|%s|", strconv.FormatUint(uint64(a), 10))
+	t.Logf("|%s|", strconv.FormatUint((-uint64(a)), 10))
+
+	lg := New(false, DEBUG, os.Stdout)
+	lg.Op().Int("-1=", -1).Int8("||-1=", -1).Int16("||-1=", -1).Int32("||-1=", -1).Int64("||-1=", -1).Done()
 }
