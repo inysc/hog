@@ -124,7 +124,8 @@ func TestDebug(t *testing.T) {
 	t.Log(1 << 13)
 }
 
-func TestAA(t *testing.T) {
+func TestPanic(t *testing.T) {
+	DefaultLogger.Panic().Msg("1234")
 	panic([]byte("1234"))
 }
 
@@ -135,6 +136,6 @@ func TestItoa(t *testing.T) {
 	t.Logf("|%s|", strconv.FormatUint(uint64(a), 10))
 	t.Logf("|%s|", strconv.FormatUint((-uint64(a)), 10))
 
-	lg := New(false, DEBUG, os.Stdout)
+	lg := New(DEBUG, os.Stdout)
 	lg.Op().Int("-1=", -1).Int8("||-1=", -1).Int16("||-1=", -1).Int32("||-1=", -1).Int64("||-1=", -1).Done()
 }

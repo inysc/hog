@@ -608,3 +608,60 @@ func (ne nilevent) Float64p(string, *float64) Event         { return ne }
 func (ne nilevent) Done()                                   {}
 func (ne nilevent) Msg(string)                              {}
 func (ne nilevent) Msgf(string, ...any)                     {}
+
+type fpevent struct{}
+
+func (ne fpevent) Any(string, any) Event                   { return ne }
+func (ne fpevent) Error(string, error) Event               { return ne }
+func (ne fpevent) IgError(string, error) Event             { return ne }
+func (ne fpevent) String(string, string) Event             { return ne }
+func (ne fpevent) Strings(string, []string) Event          { return ne }
+func (ne fpevent) Stringp(string, *string) Event           { return ne }
+func (ne fpevent) Duration(string, time.Duration) Event    { return ne }
+func (ne fpevent) Durations(string, []time.Duration) Event { return ne }
+func (ne fpevent) Durationp(string, *time.Duration) Event  { return ne }
+func (ne fpevent) Byte(string, byte) Event                 { return ne }
+func (ne fpevent) Bytes(string, []byte) Event              { return ne }
+func (ne fpevent) Bytep(string, *byte) Event               { return ne }
+func (ne fpevent) Bool(string, bool) Event                 { return ne }
+func (ne fpevent) Bools(string, []bool) Event              { return ne }
+func (ne fpevent) Boolp(string, *bool) Event               { return ne }
+func (ne fpevent) Int(string, int) Event                   { return ne }
+func (ne fpevent) Ints(string, []int) Event                { return ne }
+func (ne fpevent) Intp(string, *int) Event                 { return ne }
+func (ne fpevent) Int8(string, int8) Event                 { return ne }
+func (ne fpevent) Int8s(string, []int8) Event              { return ne }
+func (ne fpevent) Int8p(string, *int8) Event               { return ne }
+func (ne fpevent) Int16(string, int16) Event               { return ne }
+func (ne fpevent) Int16s(string, []int16) Event            { return ne }
+func (ne fpevent) Int16p(string, *int16) Event             { return ne }
+func (ne fpevent) Int32(string, int32) Event               { return ne }
+func (ne fpevent) Int32s(string, []int32) Event            { return ne }
+func (ne fpevent) Int32p(string, *int32) Event             { return ne }
+func (ne fpevent) Int64(string, int64) Event               { return ne }
+func (ne fpevent) Int64s(string, []int64) Event            { return ne }
+func (ne fpevent) Int64p(string, *int64) Event             { return ne }
+func (ne fpevent) Uint(string, uint) Event                 { return ne }
+func (ne fpevent) Uints(string, []uint) Event              { return ne }
+func (ne fpevent) Uintp(string, *uint) Event               { return ne }
+func (ne fpevent) Uint8(string, uint8) Event               { return ne }
+func (ne fpevent) Uint8s(string, []uint8) Event            { return ne }
+func (ne fpevent) Uint8p(string, *uint8) Event             { return ne }
+func (ne fpevent) Uint16(string, uint16) Event             { return ne }
+func (ne fpevent) Uint16s(string, []uint16) Event          { return ne }
+func (ne fpevent) Uint16p(string, *uint16) Event           { return ne }
+func (ne fpevent) Uint32(string, uint32) Event             { return ne }
+func (ne fpevent) Uint32s(string, []uint32) Event          { return ne }
+func (ne fpevent) Uint32p(string, *uint32) Event           { return ne }
+func (ne fpevent) Uint64(string, uint64) Event             { return ne }
+func (ne fpevent) Uint64s(string, []uint64) Event          { return ne }
+func (ne fpevent) Uint64p(string, *uint64) Event           { return ne }
+func (ne fpevent) Float32(string, float32) Event           { return ne }
+func (ne fpevent) Float32s(string, []float32) Event        { return ne }
+func (ne fpevent) Float32p(string, *float32) Event         { return ne }
+func (ne fpevent) Float64(string, float64) Event           { return ne }
+func (ne fpevent) Float64s(string, []float64) Event        { return ne }
+func (ne fpevent) Float64p(string, *float64) Event         { return ne }
+func (ne fpevent) Done()                                   { panic("") }
+func (ne fpevent) Msg(string)                              { panic("") }
+func (ne fpevent) Msgf(string, ...any)                     { panic("") }

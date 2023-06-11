@@ -81,27 +81,21 @@ func (l *logger) Op() Event    { return l.newEvent(OP, true) }
 func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
 func (l *logger) AddSkip(skip int)   { l.skip += skip }
 
-// needStd 是否需要同时输出到标准输出（仅在 ppid != 1 时生效 ）
-func New(needStd bool, lvl Level, ws ...io.Writer) Logger {
+func New(lvl Level, ws ...io.Writer) Logger {
 	var w io.Writer
 	switch len(ws) {
 	case 0:
 		w = os.Stdout
+	case 1:
+		w = ws[0]
 	default:
-		if needStd && os.Getppid() != 1 {
-			ws = append(ws, os.Stdout)
-		}
-		if len(ws) == 1 {
-			w = ws[0]
-		} else {
-			w = io.MultiWriter(ws...)
-		}
+		w = io.MultiWriter(ws...)
 	}
 	return &logger{w, lvl, 3}
 }
 
 func Simple(filename string) Logger {
-	return New(true, DEBUG, &LoggerFile{
+	return New(DEBUG, &LoggerFile{
 		Filename:   filename,
 		MaxSize:    100,
 		MaxAge:     30,
@@ -116,8 +110,8 @@ func (nillogger) Debug() Event   { return nilevent{} }
 func (nillogger) Info() Event    { return nilevent{} }
 func (nillogger) Warn() Event    { return nilevent{} }
 func (nillogger) Error() Event   { return nilevent{} }
-func (nillogger) Fatal() Event   { return nilevent{} }
-func (nillogger) Panic() Event   { return nilevent{} }
+func (nillogger) Fatal() Event   { return fpevent{} }
+func (nillogger) Panic() Event   { return fpevent{} }
 func (nillogger) Op() Event      { return nilevent{} }
 func (nillogger) SetLevel(Level) {}
 func (nillogger) AddSkip(int)    {}
