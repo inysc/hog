@@ -1,3 +1,3 @@
-module github.com/inysc/qog
+module github.com/inysc/hog
 
 go 1.18
