@@ -1,7 +1,7 @@
 //go:build !linux
 // +build !linux
 
-package qog
+package hog
 
 import (
 	"os"

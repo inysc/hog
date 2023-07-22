@@ -1,4 +1,4 @@
-package qog
+package hog
 
 import (
 	"bytes"
@@ -87,7 +87,7 @@ func TestLogger(t *testing.T) {
 
 // goos: linux
 // goarch: amd64
-// pkg: github.com/inysc/qog
+// pkg: github.com/inysc/hog
 // cpu: AMD Ryzen 5 1600 Six-Core Processor
 // BenchmarkTimeAppendFormat1-12            2391530               511.6 ns/op            56 B/op          3 allocs/op
 // BenchmarkTimeAppendFormat2-12            3178784               382.5 ns/op             0 B/op          0 allocs/op

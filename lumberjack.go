@@ -1,4 +1,4 @@
-package qog
+package hog
 
 import (
 	"compress/gzip"

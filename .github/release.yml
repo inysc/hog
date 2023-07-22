@@ -1,4 +1,4 @@
-name: Qog Release
+name: Hog Release
 
 on:
   push:
