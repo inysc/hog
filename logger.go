@@ -3,7 +3,6 @@ package qog
 import (
 	"io"
 	"os"
-	"runtime"
 	"time"
 )
 
@@ -42,27 +41,26 @@ func (l *logger) newEvent(lvl Level, flag bool) Event {
 
 			switch lvl {
 			case TRACE:
-				e.Buffer.WriteString("|TRACE|")
+				e.Buffer.WriteString(" TRACE ")
 			case DEBUG:
-				e.Buffer.WriteString("|DEBUG|")
+				e.Buffer.WriteString(" DEBUG ")
 			case INFO:
-				e.Buffer.WriteString("|INFO |")
+				e.Buffer.WriteString(" INFO ")
 			case WARN:
-				e.Buffer.WriteString("|WARN |")
+				e.Buffer.WriteString(" WARN ")
 			case ERROR:
-				e.Buffer.WriteString("|ERROR|")
+				e.Buffer.WriteString(" ERROR ")
 			case FATAL:
-				e.Buffer.WriteString("|FATAL|")
+				e.Buffer.WriteString(" FATAL ")
 			}
 
 			// 写入调用信息
 			appendCaller(e.Buffer, l.skip)
 
 			// 写入 goid
-			e.WriteString("|goid:")
-			e.Buffer.Write(transNum(runtime.Goid()))
-			e.WriteByte('|')
-			e.WriteByte(',')
+			// e.WriteString("|goid:")
+			// e.Buffer.Write(transNum(runtime.Goid()))
+			e.WriteByte(' ')
 		}
 		return e
 	}

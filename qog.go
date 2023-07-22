@@ -2,6 +2,7 @@ package qog
 
 import (
 	"bytes"
+	"path/filepath"
 	"runtime"
 	"sync"
 	"time"
@@ -101,23 +102,9 @@ const smallsString = "00010203040506070809" +
 	"90919293949596979899"
 
 func appendCaller(bf *bytes.Buffer, skip int) {
-	pc, file, line, ok := runtime.Caller(skip)
+	_, file, line, ok := runtime.Caller(skip)
 	if ok {
-		var a, b, c = 0, 0, 0
-		for i := 0; i < len(file); i++ {
-			if file[i] == '/' {
-				a = b
-				b = i
-			}
-		}
-		bf.WriteString(file[a+1:])
-		funcName := runtime.FuncForPC(pc).Name()
-		for i := 0; i < len(funcName); i++ {
-			if funcName[i] == '.' {
-				c = i
-			}
-		}
-		bf.WriteString(funcName[c:])
+		bf.WriteString(filepath.Base(file))
 		bf.WriteByte(':')
 		bf.Write(transNum(line))
 	} else {

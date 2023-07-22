@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
@@ -137,5 +138,8 @@ func TestItoa(t *testing.T) {
 	t.Logf("|%s|", strconv.FormatUint((-uint64(a)), 10))
 
 	lg := New(DEBUG, os.Stdout)
+	lg.Info().Msg(filepath.Base("/a/b"))
+	lg.Info().Msg(filepath.Base("/a/b."))
+	lg.Info().Msg(filepath.Base("/a/b.c"))
 	lg.Op().Int("-1=", -1).Int8("||-1=", -1).Int16("||-1=", -1).Int32("||-1=", -1).Int64("||-1=", -1).Done()
 }
