@@ -3,7 +3,6 @@ package hog
 import (
 	"io"
 	"os"
-	"time"
 )
 
 type Logger interface {
@@ -34,34 +33,8 @@ type logger struct {
 func (l *logger) newEvent(lvl Level, flag bool) Event {
 	if lvl >= l.lvl {
 		e := getevent()
-		e.lvl = lvl
-		e.Writer = l.Writer
-		if !flag {
-			appendTime(e.Buffer, time.Now())
+		e.Init(flag, l.skip, lvl, l.Writer)
 
-			switch lvl {
-			case TRACE:
-				e.Buffer.WriteString(" TRACE ")
-			case DEBUG:
-				e.Buffer.WriteString(" DEBUG ")
-			case INFO:
-				e.Buffer.WriteString(" INFO ")
-			case WARN:
-				e.Buffer.WriteString(" WARN ")
-			case ERROR:
-				e.Buffer.WriteString(" ERROR ")
-			case FATAL:
-				e.Buffer.WriteString(" FATAL ")
-			}
-
-			// 写入调用信息
-			appendCaller(e.Buffer, l.skip)
-
-			// 写入 goid
-			// e.WriteString("|goid:")
-			// e.Buffer.Write(transNum(runtime.Goid()))
-			e.WriteByte(' ')
-		}
 		return e
 	}
 	return nilevent{}

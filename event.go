@@ -29,6 +29,38 @@ func freeEvent(e Event) {
 	}
 }
 
+func (e *event) Init(flag bool, skip int, lvl uint8, w io.Writer) Event {
+	e.lvl = lvl
+	e.Writer = w
+	if !flag {
+		appendTime(e.Buffer, time.Now())
+
+		switch lvl {
+		case TRACE:
+			e.Buffer.WriteString(" TRACE ")
+		case DEBUG:
+			e.Buffer.WriteString(" DEBUG ")
+		case INFO:
+			e.Buffer.WriteString(" INFO ")
+		case WARN:
+			e.Buffer.WriteString(" WARN ")
+		case ERROR:
+			e.Buffer.WriteString(" ERROR ")
+		case FATAL:
+			e.Buffer.WriteString(" FATAL ")
+		}
+
+		// 写入调用信息
+		appendCaller(e.Buffer, skip)
+
+		// 写入 goid
+		// e.WriteString("|goid:")
+		// e.Buffer.Write(transNum(runtime.Goid()))
+		e.WriteByte(' ')
+	}
+	return e
+}
+
 func (e *event) String(key string, val string) Event {
 	e.WriteString(key)
 	e.WriteString(val)
@@ -554,6 +586,7 @@ func (e *event) write(msg string) {
 
 type nilevent struct{}
 
+func (ne nilevent) Init(bool, int, uint8, io.Writer) Event  { return ne }
 func (ne nilevent) Any(string, any) Event                   { return ne }
 func (ne nilevent) Error(string, error) Event               { return ne }
 func (ne nilevent) IgError(string, error) Event             { return ne }
@@ -611,6 +644,7 @@ func (ne nilevent) Msgf(string, ...any)                     {}
 
 type fpevent struct{}
 
+func (ne fpevent) Init(bool, int, uint8, io.Writer) Event  { return ne }
 func (ne fpevent) Any(string, any) Event                   { return ne }
 func (ne fpevent) Error(string, error) Event               { return ne }
 func (ne fpevent) IgError(string, error) Event             { return ne }

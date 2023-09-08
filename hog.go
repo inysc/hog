@@ -2,6 +2,7 @@ package hog
 
 import (
 	"bytes"
+	"io"
 	"path/filepath"
 	"runtime"
 	"sync"
@@ -13,6 +14,31 @@ type (
 	bufnum struct{ buf [22]byte }
 )
 
+const (
+	TRACE Level = iota
+	DEBUG
+	INFO
+	WARN
+	ERROR
+	FATAL
+	PANIC
+
+	OP
+)
+
+const maxLen = 1 << 13
+
+const smallsString = "00010203040506070809" +
+	"10111213141516171819" +
+	"20212223242526272829" +
+	"30313233343536373839" +
+	"40414243444546474849" +
+	"50515253545556575859" +
+	"60616263646566676869" +
+	"70717273747576777879" +
+	"80818283848586878889" +
+	"90919293949596979899"
+
 var (
 	bpl     = sync.Pool{New: func() any { return bytes.NewBuffer(make([]byte, 0, 1024)) }}
 	numpl   = sync.Pool{New: func() any { return new(bufnum) }}
@@ -20,6 +46,7 @@ var (
 )
 
 type Event interface {
+	Init(bool, int, uint8, io.Writer) Event
 	Any(string, any) Event
 	Error(string, error) Event
 	IgError(string, error) Event
@@ -76,31 +103,6 @@ type Event interface {
 	Msgf(string, ...any)
 }
 
-const (
-	TRACE Level = iota
-	DEBUG
-	INFO
-	WARN
-	ERROR
-	FATAL
-	PANIC
-
-	OP
-)
-
-const maxLen = 1 << 13
-
-const smallsString = "00010203040506070809" +
-	"10111213141516171819" +
-	"20212223242526272829" +
-	"30313233343536373839" +
-	"40414243444546474849" +
-	"50515253545556575859" +
-	"60616263646566676869" +
-	"70717273747576777879" +
-	"80818283848586878889" +
-	"90919293949596979899"
-
 func appendCaller(bf *bytes.Buffer, skip int) {
 	_, file, line, ok := runtime.Caller(skip)
 	if ok {
@@ -125,10 +127,10 @@ func tinyNum[T ~int](bf *bytes.Buffer, num T) {
 }
 
 type number interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-// BUG: 无法处理负数
 func transNum[T number](num T) []byte {
 	var to = numpl.Get().(*bufnum)
 	defer numpl.Put(to)

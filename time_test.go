@@ -3,7 +3,6 @@ package hog
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -110,15 +109,18 @@ func BenchmarkTimeAppendFormat2(b *testing.B) {
 }
 
 func TestTransNum(t *testing.T) {
-	for i := math.MinInt + 1; i < math.MaxInt; i++ {
+	t.Logf("[%s]", transNum(1))
+	t.Logf("[%s]", transNum(0))
+	t.Logf("[%s]", transNum(-1))
+	for i := int(-1e7); i < int(+1e7); i++ {
 		assert(strconv.Itoa(i) == string(transNum(i)), fmt.Sprintf("i=%d", i))
 	}
 }
 
 func TestDebug(t *testing.T) {
-	lg := Simple("")
+	lg := Simple("a.log")
 	lg.SetLevel(TRACE)
-	lg.Trace().Any("any=", nil).Bool("a=", true).Bools("||c=", []bool{true, false, true}).Msg("")
+	lg.Trace().Any("any=", nil).Bool("||a=", true).Bools("||c=", []bool{true, false, true}).Msg("")
 	lg.Debug().Bool("b=", true).Bools("||c=", []bool{true, false, true}).Msg("")
 	lg.Info().Bool("c=", true).Bools("||c=", []bool{true, false, true}).Msg("")
 
