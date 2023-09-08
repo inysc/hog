@@ -30,7 +30,7 @@ type logger struct {
 	skip int
 }
 
-func (l *logger) newEvent(lvl Level, flag bool) Event {
+func (l *logger) NewEvent(skip int, lvl Level, flag bool) Event {
 	if lvl >= l.lvl {
 		e := getevent()
 		e.Init(flag, l.skip, lvl, l.Writer)
@@ -40,14 +40,14 @@ func (l *logger) newEvent(lvl Level, flag bool) Event {
 	return nilevent{}
 }
 
-func (l *logger) Trace() Event { return l.newEvent(TRACE, false) }
-func (l *logger) Debug() Event { return l.newEvent(DEBUG, false) }
-func (l *logger) Info() Event  { return l.newEvent(INFO, false) }
-func (l *logger) Warn() Event  { return l.newEvent(WARN, false) }
-func (l *logger) Error() Event { return l.newEvent(ERROR, false) }
-func (l *logger) Fatal() Event { return l.newEvent(FATAL, false) }
-func (l *logger) Panic() Event { return l.newEvent(PANIC, false) }
-func (l *logger) Op() Event    { return l.newEvent(OP, true) }
+func (l *logger) Trace() Event { return l.NewEvent(l.skip, TRACE, false) }
+func (l *logger) Debug() Event { return l.NewEvent(l.skip, DEBUG, false) }
+func (l *logger) Info() Event  { return l.NewEvent(l.skip, INFO, false) }
+func (l *logger) Warn() Event  { return l.NewEvent(l.skip, WARN, false) }
+func (l *logger) Error() Event { return l.NewEvent(l.skip, ERROR, false) }
+func (l *logger) Fatal() Event { return l.NewEvent(l.skip, FATAL, false) }
+func (l *logger) Panic() Event { return l.NewEvent(l.skip, PANIC, false) }
+func (l *logger) Op() Event    { return l.NewEvent(l.skip, OP, true) }
 
 func (l *logger) SetLevel(lvl Level) { l.lvl = lvl }
 func (l *logger) AddSkip(skip int)   { l.skip += skip }
