@@ -18,6 +18,8 @@ type Logger interface {
 
 	SetLevel(Level)
 	AddSkip(int)
+
+	NewEvent(int, Level, bool) Event
 }
 
 type nillogger struct{}
@@ -76,13 +78,14 @@ func Simple(filename string) Logger {
 	})
 }
 
-func (nillogger) Trace() Event   { return nilevent{} }
-func (nillogger) Debug() Event   { return nilevent{} }
-func (nillogger) Info() Event    { return nilevent{} }
-func (nillogger) Warn() Event    { return nilevent{} }
-func (nillogger) Error() Event   { return nilevent{} }
-func (nillogger) Fatal() Event   { return fpevent{} }
-func (nillogger) Panic() Event   { return fpevent{} }
-func (nillogger) Op() Event      { return nilevent{} }
-func (nillogger) SetLevel(Level) {}
-func (nillogger) AddSkip(int)    {}
+func (nillogger) NewEvent(int, uint8, bool) Event { return nilevent{} }
+func (nillogger) Trace() Event                    { return nilevent{} }
+func (nillogger) Debug() Event                    { return nilevent{} }
+func (nillogger) Info() Event                     { return nilevent{} }
+func (nillogger) Warn() Event                     { return nilevent{} }
+func (nillogger) Error() Event                    { return nilevent{} }
+func (nillogger) Fatal() Event                    { return fpevent{} }
+func (nillogger) Panic() Event                    { return fpevent{} }
+func (nillogger) Op() Event                       { return nilevent{} }
+func (nillogger) SetLevel(Level)                  {}
+func (nillogger) AddSkip(int)                     {}
